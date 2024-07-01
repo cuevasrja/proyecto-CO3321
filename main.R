@@ -7,7 +7,7 @@
 source("linear_reg.R")
 # Cargamos la base de datos suministrada
 library(readxl)
-Datos_car <- read_excel("D:/Downloads/Datos_car.xlsx")
+Datos_car <- read_excel("./Datos_car.xlsx")
 View(Datos_car)
 attach(Datos_car)
 names(Datos_car)
