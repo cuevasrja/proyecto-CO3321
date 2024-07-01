@@ -476,3 +476,27 @@ correlacion(Datos_car)
 
 # Eliminamos uno por uno los rasgos para ajustar el modelo de regresion multiple
 # y ver como afecta el ajuste del modelo
+
+# Eliminamos la variable Car_ID ya que no aporta información relevante
+Datos_car$Car_ID <- NULL
+
+# Eliminamos la variable Brand ya que no es una variable cuantitativa
+Datos_car$Brand <- NULL
+
+# Eliminamos la variable Model ya que no es una variable cuantitativa
+Datos_car$Model <- NULL
+
+# Eliminamos la variable Fuel_Type ya que no es una variable cuantitativa
+Datos_car$Fuel_Type <- NULL
+
+# Eliminamos la variable Transmission ya que no es una variable cuantitativa
+Datos_car$Transmission <- NULL
+
+# Transformamos la variable Owner_Type en una variable cuantitativa.
+# Valores actuales: First, Second, & Third
+# Nuevos valores: 1, 2, & 3
+Datos_car$Owner_Type <- as.numeric(factor(Datos_car$Owner_Type))
+
+# Realizamos las pruebas de significancia para cada variable
+
+
