@@ -4,8 +4,6 @@
 # Juan Cuevas        - Carnet: 19-10056
 # Anya Marcano       - Carnet: 19-10336
 
-source("linear_reg.R")
-source("linear_reg.R")
 library(corrplot)
 library(MASS)
 library(lmtest)
@@ -645,8 +643,6 @@ Datos_car$Owner_Type <- as.numeric(factor(Datos_car$Owner_Type))
 # 1. Calcule y grafique la matriz de correlación. Interprete los resultados.                       # FALTA LA GRAFICA
 # ---------------------------------------------------------------------------------------------------------------------
 # Generamos una matriz de correlación
-
-correlacion(Datos_car)
 
 cor(Datos_car)
 
