@@ -1,0 +1,22 @@
+---
+title: "Proyecto - CO3321"
+# Baudilio Velasquez - Carnet: 18-10665
+# Juan Cuevas        - Carnet: 19-10056
+# Anya Marcano       - Carnet: 19-10336
+# author: "Juan Cuevas / 19-10056 / V-28.492.053"
+author:
+  - "Baudilio Velasquez. 18-10665"
+  - "Juan Cuevas. 19-10056"
+  - "Anya Marcano. 19-10336"
+date: "2024-07-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+Datos_car <- read_excel("./Datos_car.xlsx")
+attach(Datos_car)
+```
+
+# Parte 1
