@@ -4,6 +4,7 @@
 # Juan Cuevas        - Carnet: 19-10056
 # Anya Marcano       - Carnet: 19-10336
 
+source("linear_reg.R")
 # Cargamos la base de datos suministrada
 library(readxl)
 Datos_car <- read_excel("D:/Downloads/Datos_car.xlsx")
@@ -469,3 +470,9 @@ boxplot(Price, main = "Boxplot de la variable Price", xlab = "Price",
 # la primera de 1574000 unidades y la segunda de 1300000 unidades, es decir, hay
 # un margen de 274000 unidades entre ambas medidas.
 
+
+# Generamos una matriz de correlacion
+correlacion(Datos_car)
+
+# Eliminamos uno por uno los rasgos para ajustar el modelo de regresion multiple
+# y ver como afecta el ajuste del modelo
