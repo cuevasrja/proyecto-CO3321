@@ -642,8 +642,8 @@ Datos_car$Transmission <- as.numeric(factor(Datos_car$Transmission))
 # Nuevos valores: 1, 2, & 3
 Datos_car$Owner_Type <- as.numeric(factor(Datos_car$Owner_Type))
 
-# 1. Calcule y grafique la matriz de correlación. Interprete los resultados.
-
+# 1. Calcule y grafique la matriz de correlación. Interprete los resultados.                       # FALTA LA GRAFICA
+# ---------------------------------------------------------------------------------------------------------------------
 # Generamos una matriz de correlación
 
 correlacion(Datos_car)
