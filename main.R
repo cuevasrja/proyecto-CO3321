@@ -5,10 +5,11 @@
 # Anya Marcano       - Carnet: 19-10336
 
 source("linear_reg.R")
-source("linear_reg.R")
 library(corrplot)
 library(MASS)
 library(lmtest)
+library(corrplot)
+library(stargazer)
 
 # Cargamos la base de datos suministrada
 library(readxl)
@@ -622,103 +623,91 @@ t.test(Potencia_Gasolina, Potencia_Gasoil, alternative = "two.sided",
 
 plot(Datos_car)
 
-# Eliminamos la variable Car_ID ya que no aporta información relevante
-Datos_car$Car_ID <- NULL
-
-# Transformamos la variable Bran en una variable cuantitativa.
-Datos_car$Brand <- as.numeric(factor(Datos_car$Brand))
-
-# Transformamos la variable Model en una variable cuantitativa.
-Datos_car$Model <- as.numeric(factor(Datos_car$Model))
-
-# Transformamos la variable Fuel_Type en una variable cuantitativa.
-Datos_car$Fuel_Type <- as.numeric(factor(Datos_car$Fuel_Type))
-
-# Transformamos la variable Transmission en una variable cuantitativa.
-Datos_car$Transmission <- as.numeric(factor(Datos_car$Transmission))
-
-# Transformamos la variable Owner_Type en una variable cuantitativa.
-# Valores actuales: First, Second, & Third
-# Nuevos valores: 1, 2, & 3
-Datos_car$Owner_Type <- as.numeric(factor(Datos_car$Owner_Type))
-
 # 1. Calcule y grafique la matriz de correlación. Interprete los resultados.                       # FALTA LA GRAFICA
 # ---------------------------------------------------------------------------------------------------------------------
-# Generamos una matriz de correlación
+# Generamos una matriz de correlación, pero para ello debemos suprimir de la 
+# base de datos las variables cualitativas, ya que estas no nos permiten
+# calcular la correlación entre las variables.
 
-correlacion(Datos_car)
+Datos_car$Brand <- NULL
+Datos_car$Model <- NULL
+Datos_car$Fuel_Type <- NULL
+Datos_car$Transmission <- NULL
+Datos_car$Owner_Type <- NULL
 
+# Adicionalmente, eliminamos la variable Car_ID ya que no aporta información 
+# relevante
+
+Datos_car$Car_ID <- NULL
+
+# Generamos la matriz de correlación
 cor(Datos_car)
+corrplot(cor(Datos_car), method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45)
+
+# Matriz de correlación obtenida:
+#                      Year   Kilometers_Driven    Mileage     Engine       Power         Seats         Price
+#Year               1.0000000       -0.74117562  0.2131767 -0.3551219 -0.24944589 -2.525978e-01 -2.326870e-01
+#Kilometers_Driven -0.7411756        1.00000000 -0.1044366  0.1123405 -0.02673176  3.964429e-01 -5.110405e-02
+#Mileage            0.2131767       -0.10443657  1.0000000 -0.6809491 -0.64889438 -1.945813e-01 -5.952520e-01
+#Engine            -0.3551219        0.11234045 -0.6809491  1.0000000  0.80570882  1.791794e-01  7.144648e-01
+#Power             -0.2494459       -0.02673176 -0.6488944  0.8057088  1.00000000 -1.028667e-01  8.566198e-01
+#Seats             -0.2525978        0.39644289 -0.1945813  0.1791794 -0.10286670  1.000000e+00 -2.692346e-05
+#Price             -0.2326870       -0.05110405 -0.5952520  0.7144648  0.85661983 -2.692346e-05  1.000000e+00
 
 # Análisis de la matriz de correlación:-----------------------------------------
-# Observando la matriz de correlación tenemos lo siguiente:
+# Sabemos que la matriz de correlación proporciona una visión cuantitativa de 
+# cómo cada variable independiente se relaciona con la variable dependiente 
+# en este caso Price y entre sí. 
+# La correlación mide la fuerza y la dirección de la relación lineal entre dos 
+# variables en una escala de -1 a 1, donde -1 indica una correlación negativa 
+# perfecta, 0 indica ninguna correlación, y 1 indica una correlación positiva 
+# perfecta. Siendo asi, podemos profundizar en la interpretación de estas 
+# correlaciones con respecto a Price:
   
-# 1) Variables con alta correlación con Price:
-# Engine: 0.7144648 (correlación positiva)
-# Power: 0.85661983 (correlación positiva)
-# Estas variables muestran una fuerte correlación positiva con Price, 
-# lo que indica que a medida que el valor de Engine o Power aumenta, 
-# el Price tiende a aumentar también.
+# Power (0.85661983): Esta alta correlación positiva sugiere que existe una 
+#                     fuerte relación lineal entre la potencia del auto y su 
+#                     precio. A medida que la potencia aumenta, el precio tiende 
+#                     a aumentar en una proporción similar.
 
-# 2) Variables con correlación negativa significativa con Price:
-  
-# Mileage: -0.59525201
-# Owner_Type: -0.3014882349
-# Transmission:  -0.67648351
+# Engine (0.7144648): Una correlación positiva significativa indica que los 
+#                     autos con motores más grandes generalmente tienen precios 
+#                     más altos. Esto puede deberse a que los motores más 
+#                     grandes ofrecen más potencia, durabilidad o un estatus 
+#                     percibido que los consumidores están dispuestos a pagar.
 
-# Mileage y Transmission tienen una correlación negativa moderada a fuerte con 
-# Price, lo que sugiere que a medida que el valor de estas variables aumenta, 
-# el precio tiende a disminuir. Owner_Type también muestra una correlación 
-# negativa con Price, aunque menos fuerte que las anteriores.
+# Mileage (-0.5952520): La correlación negativa sugiere que a medida que el 
+#                       millaje (eficiencia de combustible) aumenta, el precio 
+#                       tiende a disminuir.
 
-# 3) Variables con baja o ninguna correlación significativa con Price:
-  
-# Brand: -0.35454254
-# Model: -0.29243416
-# Year: -0.23268700
-# Kilometers_Driven: -0.0511040544
-# Fuel_Type: -0.180963587
-# Seats: -2.692346e-05
+# Year (-0.2326870): Una correlación negativa débil con el año sugiere que los 
+#                    autos más nuevos tienden a tener precios ligeramente más 
+#                    bajos en este conjunto de datos.
 
-# Aunque Brand, Model, Year, y Fuel_Type tienen correlaciones negativas con 
-# Price, son relativamente bajas en comparación con otras variables. Por otro
-# lado, Kilometers_Driven y Seats tienen correlaciones muy bajas o nulas con 
-# Price, lo que sugiere que podrían no ser predictores útiles en el modelo.
-# Siendo así, estas variables podrían ser eliminadas del modelo para simplificar
-# el análisis.
+# Kilometers_Driven (-0.05110405): Esta correlación negativa muy débil indica 
+#                                  que hay poca o ninguna relación lineal entre 
+#                                  os kilómetros conducidos y el precio. Esto 
+#                                  sugiere que el número de kilómetros que un 
+#                                  auto ha sido conducido no es un factor 
+#                                  determinante significativo del precio en 
+#                                  este conjunto de datos.
 
-# En resumen, las variables Engine, Power, Mileage, Owner_Type, y Transmission
-# parecen ser los predictores más fuertes de Price, y podrían ser buenos
-# candidatos para incluir en el modelo de regresión lineal múltiple.
+# Seats (-0.00002692346): La correlación prácticamente nula con el número de 
+#                         asientos indica que este factor no tiene prácticamente
+#                         ningún impacto en el precio de un coche en este 
+#                         conjunto de datos. Esto podría sugerir que el tamaño 
+#                         del coche o la capacidad de pasajeros no son 
+#                         criterios primordiales para determinar el precio, 
+#                         al menos no de manera lineal.
 
 # 2. Ajuste un modelo de regresión lineal múltiple. Para ello:
 #     a. Realice la eliminación de las variables paso a paso.
 #     b. En cada paso realice las pruebas de significancia de los parámetros.
 #     c. Realice transformadas de la(s) variable(s) en caso de ser necesario.
 
-# Vamos a ajustar el modelo: Price ~ Engine + Power + Mileage + Owner_Type +
-#                                             Transmission
+# Vamos a ajustar el modelo: Price ~ Year + Kilometers_Driven + Mileage + Engine
+#                                         + Power + Seats
 
-# Eliminamos uno por uno los rasgos descartados para ajustar el modelo de 
-# regresion múltiple y ver como afecta el ajuste del modelo
-
-# Eliminamos la variable Brand
-Datos_car$Brand <- NULL
-
-# Eliminamos la variable Model 
-Datos_car$Model <- NULL
-
-# Eliminamos la variable Fuel_Type
-Datos_car$Fuel_Type <- NULL
-
-# Eliminamos la variable Year
-Datos_car$Year <- NULL
-
-# Eliminamos la variable Kilometers_Driven
-Datos_car$Kilometers_Driven <- NULL
-
-# Eliminamos la variable Seats
-Datos_car$Seats <- NULL
 
 # Para realizar las pruebas de significancia de los parámetros, usaremos la
 # función summary, la cual nos proporciona información sobre los coeficientes
@@ -726,131 +715,215 @@ Datos_car$Seats <- NULL
 # cada variable en el modelo.
 
 # Ajustamos el modelo completo
-modelo_completo <- lm(Price ~ Engine + Power + Mileage + Owner_Type + 
-                        Transmission, data = Datos_car)
+modelo_completo <- lm(Price ~ Year + Kilometers_Driven + Mileage + Engine + 
+                      Power + Seats, data = Datos_car)
 
 # Y verificamos la significancia de las variables con un resumen del modelo
 
 summary(modelo_completo)
 
 # Resultado obtenido:
-
-# Call:
-#  lm(formula = Price ~ Engine + Power + Mileage + Owner_Type + 
-#       Transmission, data = Datos_car)
-
-# Residuals:
+#Call:
+#  lm(formula = Price ~ Year + Kilometers_Driven + Mileage + Engine + 
+#       Power + Seats, data = Datos_car)
+#
+#Residuals:
 #  Min       1Q   Median       3Q      Max 
-# -1597521  -107770     5917   236596   854764 
+#-1681497  -287685   -91695   198917  1156451 
+#
+#Coefficients:
+#  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)        2.072e+08  1.487e+08   1.393   0.1668    
+#Year              -1.027e+05  7.351e+04  -1.397   0.1658    
+#Kilometers_Driven -1.820e+01  9.396e+00  -1.937   0.0558 .  
+#Mileage           -1.440e+04  2.266e+04  -0.635   0.5268    
+#Engine            -4.530e+01  1.623e+02  -0.279   0.7807    
+#Power              1.074e+04  1.324e+03   8.112 1.97e-12 ***
+#Seats              1.550e+05  8.417e+04   1.842   0.0687 .  
+#---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-# Coefficients:
-#             Estimate Std. Error   t value   Pr(>|t|)    
-# (Intercept)  1915050.4   582189.3  3.289    0.00141 ** 
-#   Engine        65.3      132.1    0.494    0.62221    
-#   Power       7356.0     1150.4    6.394    6.20e-09 ***
-#  Mileage     -28651.0    19625.3  -1.460    0.14765    
-# Owner_Type   -175381.1   69210.4  -2.534    0.01293 *  
-# Transmission -584563.1   112753.9  -5.184  1.24e-06 ***
-#  ---
-# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#Residual standard error: 513800 on 93 degrees of freedom
+#Multiple R-squared:  0.7522,	Adjusted R-squared:  0.7362 
+#F-statistic: 47.05 on 6 and 93 DF,  p-value: < 2.2e-16
 
-# Residual standard error: 454400 on 94 degrees of freedom
-# Multiple R-squared:  0.804,	Adjusted R-squared:  0.7936 
-# F-statistic: 77.14 on 5 and 94 DF,  p-value: < 2.2e-16
+# ANALISIS:
 
 # Ahora, veamos cuales de las variables son significativas para el modelo, esto 
 # lo haremos evaluando si el p-valor de cada variable es menor a 0.05, en cuyo
 # caso la variable es significativa para el modelo.
 
-# Intercepto:    0.00141 < 0.05
-# Engine:        0.62221 > 0.05
-# Power:        6.20e-09 < 0.05
-# Mileage:       0.14765 > 0.05
-# Owner_Type:    0.01293 < 0.05
-# Transmission: 1.24e-06 < 0.05
+# Intercepto:          0.1668 > 0.05
+# Year:                0.1658 > 0.05
+# Kilometers_Driven:   0.0558 > 0.05
+# Mileage:             0.5268 > 0.05
+# Power:             1.97e-12 < 0.05
+# Seats:               0.0687 > 0.05
 
-# De acuerdo a los resultados obtenidos, podemos decir que las variables
-# significativas para el modelo son: Power, Owner_Type y Transmission, mientras
-# que las variables Engine y Mileage no son significativas para el modelo.
 
-# Ajustamos un nuevo modelo sin la variable Engine
+# De acuerdo a los resultados obtenidos, podemos decir que la variable Power
+# es la única cuyo p-valor es menor a 0.05, lo cual indica que es  la más 
+# significativa para el modelo, mientras que las demás variables no son 
+# significativas para el mismo, veamos primero que sucede si eliminamos la 
+# variable con el p-valor más alto, en este caso Mileage:
 
-modelo_ajustado <- lm(Price ~ Power + Mileage + Owner_Type + Transmission, 
-                      data = Datos_car)
-
-# Y verificamos la significancia de las variables con un resumen del modelo
+modelo_ajustado <- lm(Price ~ Year + Kilometers_Driven + Engine +
+                        Power + Seats, data = Datos_car)
 
 summary(modelo_ajustado)
 
 # Resultado obtenido:
 # Call:
-# lm(formula = Price ~ Power + Mileage + Owner_Type + Transmission, 
-#   data = Datos_car)
-#
-# Residuals:
-#   Min       1Q   Median       3Q      Max 
-# -1502065  -114886     7834   237593   854995 
-# 
-# Coefficients:
-#             Estimate Std.  Error  t value   Pr(>|t|)    
-# (Intercept)  2047292.8   515033.1   3.975  0.000137 ***
-#   Power         7691.1      925.8   8.308  6.73e-13 ***
-#   Mileage     -32162.6    18221.7  -1.765  0.080766 .  
-# Owner_Type   -180308.2    68216.1  -2.643  0.009607 ** 
-# Transmission -581297.0   112111.7  -5.185  1.22e-06 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# lm(formula = Price ~ Year + Kilometers_Driven + Engine + Power + 
+#     Seats, data = Datos_car)
 
-# Residual standard error: 452600 on 95 degrees of freedom
-# Multiple R-squared:  0.8035,	Adjusted R-squared:  0.7953 
-# F-statistic: 97.13 on 4 and 95 DF,  p-value: < 2.2e-16
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+# -1694678  -300372  -118634   167366  1135169 
 
-# Ahora, veamos cuales de las variables son significativas para el modelo, esto
-# lo haremos evaluando si el p-valor de cada variable es menor a 0.05, en cuyo
-# caso la variable es significativa para el modelo.
+#Coefficients:
+#                   Estimate Std. Error   t value Pr(>|t|)    
+#(Intercept)        1.946e+08  1.469e+08   1.325   0.1884    
+#Year              -9.668e+04  7.267e+04  -1.331   0.1866    
+#Kilometers_Driven -1.757e+01  9.314e+00  -1.887   0.0623 .  
+#Engine            -1.923e+01  1.565e+02  -0.123   0.9024    
+#Power              1.100e+04  1.252e+03   8.786    7e-14 ***
+#Seats              1.656e+05  8.225e+04   2.013   0.0470 *  
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-# Intercepto:    0.000137 < 0.05
-# Power:         6.73e-13 < 0.05
-# Mileage:       0.080766 > 0.05
-# Owner_Type:    0.009607 < 0.05
-# Transmission:  1.22e-06 < 0.05
+#Residual standard error: 512100 on 94 degrees of freedom
+#Multiple R-squared:  0.7511,	Adjusted R-squared:  0.7379 
+#F-statistic: 56.74 on 5 and 94 DF,  p-value: < 2.2e-16
 
-# En este caso, hemos obtenido un modelo que explica el 79.53% de la variabilidad
-# lo cual es una mejora en comparación con el modelo anterior, que solo 
-# explicaba el 79.36% de la variabilidad.
+# vemos que la variable Seats entró en el rango de significancia y al mismo 
+# tiempo nuestro modelo ha incrementado de 0.7362 a 0.7379, lo cual indica que
+# con este cambio hemos logrado incrementar la capacidad explicativa del modelo
+# y con ello el porcentaje de variabilidad explicada por el modelo, sin embargo
+# el error residual estandar se ha incrementado de 512100 a 514200, lo cual
+# nos indica que el modelo no ha mejorado en términos de precisión.
 
-# PLantearemos un nuevo modelo sin la variable Mileage
+# Veamos ahora que sucede si eliminamos el intercepto del modelo
 
-modelo_ajustado2 <- lm(Price ~ Power + Owner_Type + Transmission, 
-                       data = Datos_car)
-
-# Y verificamos la significancia de las variables con un resumen del modelo
+modelo_ajustado2 <- lm(Price ~ Year + Kilometers_Driven + Engine +
+                        Power + Seats -1, data = Datos_car)
 
 summary(modelo_ajustado2)
 
 # Resultado obtenido:
-# Call:
-# lm(formula = Price ~ Power + Owner_Type + Transmission, data = Datos_car)
-# 
-# Residuals:
-#   Min       1Q   Median       3Q      Max 
-# -1486721  -131674     5597   301892   816950 
-# 
-# Coefficients:
-#   Estimate Std. Error t value Pr(>|t|)    
-# (Intercept)  1294948.2   292266.3   4.431 2.49e-05 ***
-#   Power           8671.5      748.7  11.581  < 2e-16 ***
-#   Owner_Type   -166585.4    68514.3  -2.431   0.0169 *  
-#   Transmission -566883.1   113039.1  -5.015 2.43e-06 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-# Residual standard error: 457600 on 96 degrees of freedom
-# Multiple R-squared:  0.7971,	Adjusted R-squared:  0.7907 
-# F-statistic: 125.7 on 3 and 96 DF,  p-value: < 2.2e-16
-                                                                                #FALTA ANALISIS FINAL Y DECIDIR SI MANTENER 
-                                                                                #AJUSTADO O AJUSTADO2 PORQUE EL % DE EXPLICACION DE 
-                                                                                #VARIABILIDAD BAJA EN EL AJUSTADO2
+#Call:
+#  lm(formula = Price ~ Year + Kilometers_Driven + Engine + Power + 
+#       Seats - 1, data = Datos_car)
+#
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1645932  -323990   -86826   184851  1103234 
+
+#Coefficients:
+#                     Estimate Std. Error t value Pr(>|t|)    
+#Year                -395.335    196.133  -2.016   0.0467 *  
+#Kilometers_Driven     -8.313      6.182  -1.345   0.1819    
+#Engine                17.671    154.592   0.114   0.9092    
+#Power              11143.958   1252.781   8.895 3.79e-14 ***
+#Seats             155056.061  82193.044   1.886   0.0623 .  
+#---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 514200 on 95 degrees of freedom
+#Multiple R-squared:  0.9276,	Adjusted R-squared:  0.9238 
+#F-statistic: 243.4 on 5 and 95 DF,  p-value: < 2.2e-16
+
+# En este caso, vemos que el modelo ha mejorado en términos de capacidad
+# explicativa, ya que el porcentaje de variabilidad explicada por el modelo ha
+# aumentado de 0.7379 a 0.9238, lo cual indica que el modelo explica el 92.38%
+# sin embargo, el error residual estandar se ha incrementado de 512100 a 514200,
+# lo cual nos indica que el modelo no ha mejorado en términos de precisión y 
+# adicionalmente seguimos teniendo variables no significativas de acuerdo a 
+# su p-valor
+
+# Para el siguiente ajuste, aplicaremos una transformación de raiz cuadrada a
+# la variable más significativa del modelo, la variable Power, para ver si
+# esto impacta en las demás variables y logramos mejorar el aspecto del
+# error residual estandar, ya que en lo que respecta al porcentaje de
+# variabilidad explicada por el modelo, el modelo ya es bastante bueno.
+
+modelo_ajustado3 <- lm(Price ~ Year + Kilometers_Driven + Engine + 
+                        sqrt(Power) + Seats -1, data = Datos_car)
+
+summary(modelo_ajustado3)
+
+# Resultados obtenidos:
+# Call:
+# lm(formula = Price ~ Year + Kilometers_Driven + Engine + sqrt(Power) + 
+#     Seats - 1, data = Datos_car)
+#
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1333185  -253017   -29745   292936   949089 
+#
+#Coefficients:
+#                     Estimate Std. Error t value Pr(>|t|)    
+#Year               -1431.957    216.359  -6.618 2.14e-09 ***
+#Kilometers_Driven    -10.660      5.451  -1.956   0.0535 .  
+#Engine              -161.638    139.005  -1.163   0.2478    
+#sqrt(Power)       346880.221  30591.691  11.339  < 2e-16 ***
+#Seats             155362.889  71414.462   2.176   0.0321 *  
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#
+#Residual standard error: 453700 on 95 degrees of freedom
+#Multiple R-squared:  0.9436,	Adjusted R-squared:  0.9406 
+#F-statistic: 317.9 on 5 and 95 DF,  p-value: < 2.2e-16
+
+# Vemos que el haber aplicado la transformación de raiz cuadrada a la variable
+# Power ha mejorado el modelo, ya que el porcentaje de variabilidad explicada
+# incrementó de 0.9238 a 0.9406, y al mismo tiempo logramos reducir el error
+# residual estandar de 514200 a 453700, impactandose también las variables Year
+# y Seats, las cuales ahora son mucho más significativas para el modelo.
+
+# Probaremos nuevamente una transformación de raiz cuadrada, pero en este caso a
+# las variables Year y Seats, exactamente las que logramos mejorar en el modelo
+# anterior, para ver si esto acarrea un cambio positivo en el modelo, además
+# sacaremos la variable Engine que persistentemente no ha sido significativa
+# en los modelos anteriores y mantiene un p-valor 0.2478 > 0.05
+# 
+
+modelo_ajustado4 <- lm(Price ~ sqrt(Year) + Kilometers_Driven +
+                         sqrt(Power) + sqrt(Seats) -1, data = Datos_car)
+
+summary(modelo_ajustado4)
+
+# Resultados obtenidos:
+#Call:
+#  lm(formula = Price ~ sqrt(Year) + Kilometers_Driven + sqrt(Power) + 
+#       sqrt(Seats) - 1, data = Datos_car)
+#
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1398650  -265358   -69987   303413   959759 
+#
+#Coefficients:
+#                    Estimate Std. Error t value  Pr(>|t|)    
+#sqrt(Year)        -78247.073  16139.454  -4.848 4.79e-06 ***
+#Kilometers_Driven    -11.285      5.458  -2.068   0.0413 *  
+#sqrt(Power)       317485.194  16160.975  19.645  < 2e-16 ***
+#sqrt(Seats)       664311.416 319043.627   2.082   0.0400 *  
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 452700 on 96 degrees of freedom
+#Multiple R-squared:  0.9433,	Adjusted R-squared:  0.9409 
+#F-statistic:   399 on 4 and 96 DF,  p-value: < 2.2e-16
+
+# En este caso vemos que el modelo ha mejorado en términos de capacidad
+# explicativa, ya que el porcentaje de variabilidad explicada por el modelo 
+# ahora es de 94.09%, sin embargo, el error residual estandar también ha
+# disminuido de 453700 a 452700, lo cual indica que el modelo ha mejorado en
+# términos de precisión, y además, en este modelo todas las variables son 
+# significativas para el mismo, lo cual indica que el modelo debería ser 
+# más adecuado que los anteriores.
+
 #---------------------------------------------------------------------------------------------------------
 
 # c) Transformadas de la(s) variable(s) en caso de ser necesario:
@@ -868,82 +941,133 @@ summary(modelo_ajustado2)
 # iii. Verifique independencia de acuerdo a lo observado en las gráficas 
 #      resultantes.
 
+# De momento tomaremos el modelo_ajustado5 como el modelo adecuado, ya que es
+# el que ha mostrado un mejor ajuste en términos de capacidad explicativa y
+# de precisión, sin embargo, realizaremos los análisis necesarios para verificar
+# que esto es así
+
+par(mfrow = c(2, 2))
+plot(modelo_ajustado4)
+
 # Verificación de normalidad:
-qqnorm(rstandard(modelo_ajustado2))
-qqline(rstandard(modelo_ajustado2))
+par(mfrow = c(1, 1))
+qqnorm(rstandard(modelo_ajustado4))
+qqline(rstandard(modelo_ajustado4))
 
 # Analisis: 
-# En el gráfico Q-Q plot, los residuos se ajustan bastante bien a la línea
-# diagonal, lo que sugiere que los residuos siguen una distribución normal,
-# lo cual es un indicador de que el modelo es adecuado.
+# En el gráfico Q-Q plot, los residuos mayormente se ajustan y se aproximan
+# bastante a la línea diagonal, lo que sugiere que los residuos siguen una 
+# distribución normal,lo cual es un indicador de que el modelo es adecuado.
 # Por lo tanto, podemos decir que el modelo es adecuado en términos de
 # normalidad.
 
 # Verificación de homocedasticidad:
-plot(fitted.values(modelo_ajustado2), rstandard(modelo_ajustado2), 
+plot(fitted.values(modelo_ajustado4), rstandard(modelo_ajustado4), 
      xlab = "Valores ajustados", ylab = "Residuos estandarizados", 
      main = "Homocedasticidad")
 
 # Analisis:
-# En el gráfico de residuos estandarizados vs valores ajustados, no se observa
-# un patrón claro en la dispersión de los residuos, lo que sugiere que la
-# varianza de los residuos es constante, lo cual es un indicador de que el
-# modelo es adecuado en términos de homocedasticidad.
+# En el gráfico de residuos estandarizados vs valores ajustados, mayormente
+# no se observa un patrón facilmente distinguible en todo el lienzo, 
+# sin embargo el cúmulo de puntos en la parte superior izquierda del gráfico 
+# sugiere que los residuos no son homocedásticos, lo cual podría ser un problema
+# en el modelo, por lo que quizás comvendria realizar una transformación 
+# diferente de las variables para ver si se logra mejorar la homocedasticidad.
 
 # Verificación de independencia:
 # Para verificar la independencia, se debe hacer una gráfica para cada variable
 # independiente. En este caso, las variables independientes son:
-# - Power
-# - Owner_Type
-# - Transmission
-# Entonces, se deben realizar 3 gráficos de los residuos estandarizados Vs la 
+# - Sqrt(Year)
+# - Kilometers_Driven
+# - Sqrt(Power)
+# - Sqrt(Seats)
+
+# Entonces, se deben realizar 4 gráficos de los residuos estandarizados Vs la 
 # variable independiente
 
-# Gráfico de residuos estandarizados vs Power
-plot(Datos_car$Power, rstandard(modelo_ajustado2), 
-     xlab = "Power", ylab = "Residuos estandarizados", 
-     main = "Independencia - Power")
+# Gráfico de residuos estandarizados vs sqrt(Year)
+plot(sqrt(Datos_car$Year), rstandard(modelo_ajustado4), 
+     xlab = "Year", ylab = "Residuos estandarizados", 
+     main = "Independencia - sqrt(Year)")
 
-# Gráfico de residuos estandarizados vs Owner_Type
-plot(Datos_car$Owner_Type, rstandard(modelo_ajustado2), 
-     xlab = "Owner_Type", ylab = "Residuos estandarizados", 
-     main = "Independencia - Owner_Type")
+# Analisis:
+# En este caso, vemos que los datos no se encuentran distribuidos de manera
+# aleatoria en el gráfico, lo cual sugiere que los residuos no son 
+# independientes para la variable sqrt(Year).
 
-# Gráfico de residuos estandarizados vs Transmission
-plot(Datos_car$Transmission, rstandard(modelo_ajustado2), 
+# Gráfico de residuos estandarizados vs Kilometers_Driven
+plot(Datos_car$Kilometers_Driven, rstandard(modelo_ajustado4), 
+     xlab = "Kilometraje", ylab = "Residuos estandarizados", 
+     main = "Independencia - Kilometraje")
+
+# Analisis:
+# En este caso, vemos que los datos no se encuentran distribuidos de manera
+# aleatoria en el gráfico, lo cual sugiere que los residuos no son
+# independientes para la variable Kilometers_Driven.
+
+# Gráfico de residuos estandarizados vs Sqrt(Power)
+plot(sqrt(Datos_car$Power), rstandard(modelo_ajustado4), 
+     xlab = "sqrt(Power)", ylab = "Residuos estandarizados", 
+     main = "Independencia - sqtr(Power)")
+
+# Analisis:
+# En este caso, vemos que los datos se encuentran distribuidos de manera
+# mucho más aleatoria que en los gráficos anteriores, lo cual sugiere que los
+# residuos tienen un mayor grado de independencia para la variable sqrt(Power).
+
+# Gráfico de residuos estandarizados vs sqrt(Seats)
+plot(sqrt(Datos_car$Seats), rstandard(modelo_ajustado4), 
      xlab = "Transmission", ylab = "Residuos estandarizados", 
      main = "Independencia - Transmission")
-                                                                                #FALTAN LOS ANALISIS INDIVIDUALES Xd
-#-----------------------------------------------------------------------------------------------------------------------------
+
+# Analisis:
+# Así como sucedió con las variables Year y Kilometers_Driven, en este caso
+# también vemos que los datos no se encuentran distribuidos de manera aleatoria
+# en el gráfico, lo cual sugiere que los residuos no son independientes para la
+# variable sqrt(Seats).
+
+# Sabemos que existen dos formas de probar la independencia de los residuos
+# una es usando el grafico de la variable aleatoria versus los residuos del 
+# modelo, ahora lo verificaremos usando el estadístico de Durbin-Watson. 
+# Si éste está entre 1.5 e 2.5 entonces podemos asumir que los residuos son 
+# independientes.
 
 # Usando la prueba de Durbin-Watson, cuya prueba de hipótesis es
 # H0: No existe correlación entre los residuos
 # Ha: Los residuos están correlacionados
 
 # Prueba de Durbin-Watson
-dwtest(modelo_ajustado2)
+dwtest(modelo_ajustado5)
 
 # Resultado obtenido:
 # Durbin-Watson test
-# data:  modelo_ajustado2
-# DW = 1.6184, p-value = 0.02793
+# data:  modelo_ajustado5
+# DW = 1.6547, p-value = 0.03835
 # alternative hypothesis: true autocorrelation is greater than 0
 
 # Conclusión:
-# Como el p-valor obtenido es de 0.02793, el cual es menor al nivel de
+# Como el p-valor obtenido es de 0.03835, el cual es menor al nivel de
 # significancia establecido, el cual fue de 0.05, tenemos suficiente evidencia
 # para rechazar la hipótesis nula, por lo que podemos decir que los residuos
 # están correlacionados, sin embargo como el valor del estadístico de Durbin-
-# Watson es de 1.6184, es decir se encuentra entre 1.5 y 2.5 podemos decir que
+# Watson es de 1.6547, es decir se encuentra entre 1.5 y 2.5 podemos decir que
 # la correlación es débil, por lo que podemos decir que el modelo es adecuado
 # en términos de independencia y que la correlación entre los residuos no 
 # representa un motivo de preocupación.
 
-# Problemas detectados -> En las graficas de independencia se observa un
-# comportamiento lineal en los residuos, lo cual puede ser un indicio de que
-# existe una relación entre los residuos y las variables independientes, lo cual
-# podría ser un problema en el modelo, en particular para las variables 
-# Owner_Type y Transmission.
+# 4. Realice el método de comparación de modelos (AIC) para identificar cual 
+# de los modelos resultantes es mejor (en caso de haber resultado más de un 
+# candidato a mejor modelo).
 
+AIC(modelo_completo, modelo_ajustado, modelo_ajustado2, modelo_ajustado3, 
+    modelo_ajustado4)
+# Resultado Obtenido:
+#                 df      AIC
+#modelo_completo   8 2922.429
+#modelo_ajustado   7 2920.862
+#modelo_ajustado2  6 2920.713
+#modelo_ajustado3  6 2895.718
+#modelo_ajustado4  5 2894.325
 
-
+# Con lo cual vemos que el modelo que mejor se ajusta a los datos es el modelo
+# modelo_ajustado4, ya que es el que tiene el menor valor de AIC
